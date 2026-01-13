@@ -1,0 +1,189 @@
+{
+  "entities": {
+    "Student": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Student",
+      "type": "object",
+      "description": "Represents a student in the school's ledger.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Student entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the student."
+        },
+        "grade": {
+          "type": "string",
+          "description": "The grade level of the student."
+        },
+        "totalFeesDue": {
+          "type": "number",
+          "description": "The total amount of fees due for the student."
+        },
+        "feesPaid": {
+          "type": "number",
+          "description": "The total amount of fees paid by the student."
+        },
+        "balance": {
+          "type": "number",
+          "description": "The remaining balance for the student (totalFeesDue - feesPaid)."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "grade",
+        "totalFeesDue",
+        "feesPaid",
+        "balance"
+      ]
+    },
+    "Transaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Transaction",
+      "type": "object",
+      "description": "Represents a financial transaction (income or expense).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Transaction entity."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of transaction (Income or Expense)."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the transaction."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the transaction (e.g., Tuition, Uniforms, Maintenance)."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date of the transaction.",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the transaction."
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "amount",
+        "category",
+        "date",
+        "description"
+      ]
+    },
+    "Summary": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Summary",
+      "type": "object",
+      "description": "Represents a summary of financial data, tracking total profit and total loss.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Summary entity. This will likely be a fixed ID for a singleton document."
+        },
+        "totalProfit": {
+          "type": "number",
+          "description": "The total profit calculated as total income minus total expenses."
+        },
+        "totalLoss": {
+          "type": "number",
+          "description": "The total loss calculated based on unpaid student balances or over-budget expenses."
+        }
+      },
+      "required": [
+        "id",
+        "totalProfit",
+        "totalLoss"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/students/{studentId}",
+        "definition": {
+          "entityName": "Student",
+          "schema": {
+            "$ref": "#/backend/entities/Student"
+          },
+          "description": "Stores student records. Includes student's name, grade, fees due, fees paid, and balance.",
+          "params": [
+            {
+              "name": "studentId",
+              "description": "The unique identifier for the student."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/students/{studentId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": {
+            "$ref": "#/backend/entities/Transaction"
+          },
+          "description": "Stores transaction records for each student. Includes denormalized 'studentId' for authorization independence.",
+          "params": [
+            {
+              "name": "studentId",
+              "description": "The unique identifier for the student."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique identifier for the transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/summary/{summaryId}",
+        "definition": {
+          "entityName": "Summary",
+          "schema": {
+            "$ref": "#/backend/entities/Summary"
+          },
+          "description": "Stores the summary of financial data, tracking total profit and total loss.  The 'summaryId' should be a fixed ID (e.g., 'global_summary') to ensure only one summary document exists.",
+          "params": [
+            {
+              "name": "summaryId",
+              "description": "The unique identifier for the summary document.  Should be a fixed value."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "roles_admin",
+          "schema": {
+            "$ref": "#/backend/entities/Student"
+          },
+          "description": "Indicates admin role using document existence. If a document exists for a user ID in this collection, the user has admin privileges.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure prioritizes security and scalability for the Scholastic Finance Tracker application. It adheres to the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). The structure ensures that security rules are simple, robust, and easily debuggable.\n\n**Authorization Independence:**  Authorization data is denormalized where necessary to avoid `get()` calls in security rules. For example, the `transactions` subcollection under `students` includes a denormalized `studentId` field, allowing rules to verify that a user has access to a particular student before accessing their transactions, without needing to read the parent `student` document. Similarly, the `roles_admin` collection uses presence to determine admin status.\n\n**Structural Segregation:** Data with different access requirements are stored in separate collections. Student data, transactions, and the summary document are stored in separate collections to allow for different security rules to be applied to each. User roles are managed in dedicated collections (`roles_admin`).\n\n**Access Modeling:** Path-based ownership is used for student data (`/students/{studentId}`), and transactions are nested under students (`/students/{studentId}/transactions/{transactionId}`). The admin role is implemented using the existence of a document in the `/roles_admin/{uid}` collection.\n\n**QAPs Support:** The structure supports secure `list` operations by avoiding complex filtering logic in security rules. Access is determined by the presence of a document in the appropriate collection or by checking the denormalized `studentId` field in the `transactions` collection. The `roles_admin` collection also allows for secure `list` operations to check if a user has admin privileges.\n\nThis design supports the app's core features, including user authentication, student ledger management, transaction logging, dashboard analytics, profit calculation, and admin transaction control. It ensures that only authenticated admins can delete transactions, and that all data is stored securely and accessed according to the defined roles and permissions."
+  }
+}
