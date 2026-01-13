@@ -31,7 +31,7 @@ export function MakePaymentForm({ student, setOpen }: MakePaymentFormProps) {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
-      paymentAmount: 0,
+      paymentAmount: undefined,
     },
   });
   
