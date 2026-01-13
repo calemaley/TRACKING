@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, ArrowRightLeft, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Users, ArrowRightLeft, Settings, type LucideIcon } from 'lucide-react';
 
 type NavItem = {
     href: string;
@@ -22,4 +22,9 @@ export const NAV_ITEMS: NavItem[] = [
         label: 'Transactions',
         icon: ArrowRightLeft,
     },
+    {
+        href: '/settings',
+        label: 'Settings',
+        icon: Settings,
+    }
 ];
