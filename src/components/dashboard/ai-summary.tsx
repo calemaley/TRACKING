@@ -4,9 +4,13 @@ import { Loader, Wand2 } from 'lucide-react';
 import { summarizeTransactionData } from '@/ai/flows/summarize-transaction-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { transactions } from '@/lib/mock-data';
+import type { Transaction } from '@/types';
 
-export function AiSummary() {
+interface AiSummaryProps {
+    transactions: Transaction[];
+}
+
+export function AiSummary({ transactions }: AiSummaryProps) {
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,6 +21,11 @@ export function AiSummary() {
     setSummary('');
     try {
       const transactionString = transactions.map(t => `${t.date} | ${t.type} | ${t.category} | ${t.amount.toFixed(2)} | ${t.description}`).join('\n');
+      if (!transactionString) {
+        setSummary('No transaction data available to summarize.');
+        setLoading(false);
+        return;
+      }
       const result = await summarizeTransactionData({ transactionData: transactionString });
       if (result.summary) {
         setSummary(result.summary);
@@ -55,7 +64,7 @@ export function AiSummary() {
             </div>
         )}
          {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button onClick={handleGenerateSummary} disabled={loading} className="w-full mt-auto">
+        <Button onClick={handleGenerateSummary} disabled={loading || transactions.length === 0} className="w-full mt-auto">
           {loading ? 'Generating...' : 'Generate Summary'}
         </Button>
       </CardContent>
