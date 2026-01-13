@@ -24,13 +24,13 @@ export default function TransactionsPage() {
 
   return (
     <Tabs defaultValue="all">
-      <div className="flex items-center justify-between">
-        <TabsList>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <TabsList className="grid w-full grid-cols-3 sm:w-auto">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="income">Income</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
         </TabsList>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <AddTransactionDialog type="Expense" />
           <AddTransactionDialog type="Income" />
         </div>
