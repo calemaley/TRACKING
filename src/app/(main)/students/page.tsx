@@ -1,12 +1,20 @@
-"use client"
+'use client';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { studentColumns } from '@/components/students/columns';
 import { DataTable } from '@/components/data-table';
-import { students } from '@/lib/mock-data';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { useMemo } from 'react';
+import type { Student } from '@/types';
+import { AddStudentDialog } from '@/components/students/add-student-dialog';
 
 export default function StudentsPage() {
+  const firestore = useFirestore();
+  const studentsRef = useMemo(() => collection(firestore, 'students'), [firestore]);
+  const { data: students, isLoading } = useCollection<Student>(studentsRef);
+
   return (
     <Card>
       <CardHeader>
@@ -15,14 +23,16 @@ export default function StudentsPage() {
             <CardTitle>Students</CardTitle>
             <CardDescription>Manage student fees and payments.</CardDescription>
           </div>
-          <Button size="sm" className="gap-1">
-            <PlusCircle className="h-4 w-4" />
-            Add Student
-          </Button>
+          <AddStudentDialog />
         </div>
       </CardHeader>
       <CardContent>
-        <DataTable columns={studentColumns} data={students} filterColumn="name" />
+        <DataTable
+          columns={studentColumns}
+          data={students ?? []}
+          filterColumn="name"
+          isLoading={isLoading}
+        />
       </CardContent>
     </Card>
   );

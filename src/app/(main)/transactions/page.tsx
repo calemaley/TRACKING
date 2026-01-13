@@ -1,14 +1,26 @@
+'use client';
+
 import { PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTable } from '@/components/data-table';
 import { transactionColumns } from '@/components/transactions/columns';
-import { transactions } from '@/lib/mock-data';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import { useMemo } from 'react';
+import type { Transaction } from '@/types';
+import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog';
 
 export default function TransactionsPage() {
-  const incomeTransactions = transactions.filter(t => t.type === 'Income');
-  const expenseTransactions = transactions.filter(t => t.type === 'Expense');
+  const firestore = useFirestore();
+
+  const transactionsRef = useMemo(() => collection(firestore, 'transactions'), [firestore]);
+  const incomeQuery = useMemo(() => query(transactionsRef, where('type', '==', 'Income')), [transactionsRef]);
+  const expensesQuery = useMemo(() => query(transactionsRef, where('type', '==', 'Expense')), [transactionsRef]);
+
+  const { data: allTransactions, isLoading: isLoadingAll } = useCollection<Transaction>(transactionsRef);
+  const { data: incomeTransactions, isLoading: isLoadingIncome } = useCollection<Transaction>(incomeQuery);
+  const { data: expenseTransactions, isLoading: isLoadingExpenses } = useCollection<Transaction>(expensesQuery);
 
   return (
     <Tabs defaultValue="all">
@@ -19,13 +31,9 @@ export default function TransactionsPage() {
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" className="h-8 gap-1">
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Add Expense
-              </span>
-            </Button>
-          </div>
+          <AddTransactionDialog type="Expense" />
+          <AddTransactionDialog type="Income" />
+        </div>
       </div>
       <TabsContent value="all">
         <Card>
@@ -34,7 +42,12 @@ export default function TransactionsPage() {
             <CardDescription>A log of all income and expenses.</CardDescription>
           </CardHeader>
           <CardContent>
-            <DataTable columns={transactionColumns} data={transactions} filterColumn="description" />
+            <DataTable
+              columns={transactionColumns}
+              data={allTransactions ?? []}
+              filterColumn="description"
+              isLoading={isLoadingAll}
+            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -45,7 +58,12 @@ export default function TransactionsPage() {
             <CardDescription>A log of all income transactions.</CardDescription>
           </CardHeader>
           <CardContent>
-            <DataTable columns={transactionColumns} data={incomeTransactions} filterColumn="description" />
+            <DataTable
+              columns={transactionColumns}
+              data={incomeTransactions ?? []}
+              filterColumn="description"
+              isLoading={isLoadingIncome}
+            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -56,7 +74,12 @@ export default function TransactionsPage() {
             <CardDescription>A log of all expense transactions.</CardDescription>
           </CardHeader>
           <CardContent>
-            <DataTable columns={transactionColumns} data={expenseTransactions} filterColumn="description" />
+            <DataTable
+              columns={transactionColumns}
+              data={expenseTransactions ?? []}
+              filterColumn="description"
+              isLoading={isLoadingExpenses}
+            />
           </CardContent>
         </Card>
       </TabsContent>
