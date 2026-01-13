@@ -1,25 +1,26 @@
 /**
- * Core Philosophy: This ruleset enforces that only authenticated users can
- * access the database. For this initial version, any authenticated user can
- * create, read, update, and delete student and transaction records. This is a
- * permissive setup to facilitate rapid development and prototyping. In a
- * production environment, these rules would be refined to implement more
-* granular, role-based access control (e.g., distinguishing between admins,
- * teachers, and parents).
+ * Core Philosophy: This ruleset enforces role-based access control (RBAC).
+ * It distinguishes between general authenticated users and 'admins'. Admins
+ * have full CRUD (Create, Read, Update, Delete) permissions across the
+ * database, while general authenticated users have read-only access. This
+ * ensures that sensitive financial data can only be modified by authorized
+ * personnel.
  *
  * Data Structure:
  * - /students/{studentId}: Contains student ledger information.
  * - /transactions/{transactionId}: A log of all financial transactions.
  * - /summary/{summaryId}: A singleton document for global financial summaries.
+ * - /roles_admin/{userId}: A collection where the existence of a document
+ *   indicates that the user is an admin.
  *
  * Key Security Decisions:
- * - Authenticated Access Only: All operations require the user to be signed in.
- *   There is no public or unauthenticated access to any data.
- * - Open Access for Authenticated Users: To simplify development, any signed-in
- *   user has full CRUD (Create, Read, Update, Delete) permissions on student
- *   and transaction records.
- * - No Data Shape Validation: The rules focus solely on authorization (who can
- *   access what) and do not validate the schema of the data being written.
+ * - Admin-Only Writes: All write operations (create, update, delete) are
+ *   restricted to users with the 'admin' role.
+ * - Authenticated Reads: All authenticated users are granted read access to
+ *   student and transaction data, allowing for potential future features like
+ *   a parent or student portal.
+ * - Admin Role Management: Only existing admins can grant or revoke admin
+ *   privileges by creating or deleting documents in the `roles_admin` collection.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -36,40 +37,60 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    /**
+     * Checks if the user has the 'admin' role.
+     * The role is granted if a document with the user's UID exists in the
+     * /roles_admin collection.
+     */
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
     //-------------------------------------------------------------------------
     // Collection Rules
     //-------------------------------------------------------------------------
 
     /**
-     * @description Manages student records. Any authenticated user can perform any action.
+     * @description Manages student records. Only admins can write; any authenticated user can read.
      * @path /students/{studentId}
      */
     match /students/{studentId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isAdmin(); // Create, Update, Delete
 
       /**
-       * @description Manages transactions nested under a student.
+       * @description Manages transactions nested under a student. Same rules as parent.
        * @path /students/{studentId}/transactions/{transactionId}
        */
        match /transactions/{transactionId} {
-         allow read, write: if isSignedIn();
+         allow read: if isSignedIn();
+         allow write: if isAdmin();
        }
     }
     
     /**
-     * @description Manages all transactions. Any authenticated user can access these records.
+     * @description Manages all transactions. Only admins can write; any authenticated user can read.
      * @path /transactions/{transactionId}
      */
     match /transactions/{transactionId} {
-        allow read, write: if isSignedIn();
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
     }
 
     /**
-     * @description Manages a singleton summary document. Any authenticated user can read or write.
+     * @description Manages a singleton summary document. Only admins can read or write.
      * @path /summary/{summaryId}
      */
     match /summary/{summaryId} {
-      allow read, write: if isSignedIn();
+      allow read, write: if isAdmin();
+    }
+
+    /**
+     * @description Manages admin role assignments. Only other admins can grant/revoke admin roles.
+     * @path /roles_admin/{userId}
+     */
+    match /roles_admin/{userId} {
+      allow read, write: if isAdmin();
     }
   }
 }
