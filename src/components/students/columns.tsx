@@ -9,9 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import type { Student } from '@/types';
+import { EditStudentDialog } from './edit-student-dialog';
+import { MakePaymentDialog } from './make-payment-dialog';
+import { DeleteStudentDialog } from './delete-student-dialog';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -86,11 +90,18 @@ export const studentColumns: ColumnDef<Student>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Make Payment</DropdownMenuItem>
-            <DropdownMenuItem>Edit Student</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
-              Delete Student
-            </DropdownMenuItem>
+            <MakePaymentDialog student={student}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Make Payment</DropdownMenuItem>
+            </MakePaymentDialog>
+            <EditStudentDialog student={student}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit Student</DropdownMenuItem>
+            </EditStudentDialog>
+            <DropdownMenuSeparator />
+            <DeleteStudentDialog studentId={student.id} studentName={student.name}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                Delete Student
+              </DropdownMenuItem>
+            </DeleteStudentDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       );
