@@ -20,13 +20,22 @@ import { Input } from '@/components/ui/input';
 import { MainSidebarNav } from '@/components/main-sidebar';
 import Link from 'next/link';
 import { Logo } from './logo';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { NAV_ITEMS } from '@/lib/constants';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 export function MainHeader() {
   const pathname = usePathname();
+  const router = useRouter();
+  const auth = useAuth();
   const currentTitle = NAV_ITEMS.find(item => item.href === pathname)?.label || 'Dashboard';
   
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <Sheet>
@@ -73,11 +82,9 @@ export function MainHeader() {
             <span>Settings</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Logout</span>
-            </Link>
+          <DropdownMenuItem onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Logout</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
