@@ -46,6 +46,14 @@ service cloud.firestore {
      */
     match /students/{studentId} {
       allow read, write: if isSignedIn();
+
+      /**
+       * @description Manages transactions nested under a student.
+       * @path /students/{studentId}/transactions/{transactionId}
+       */
+       match /transactions/{transactionId} {
+         allow read, write: if isSignedIn();
+       }
     }
     
     /**
