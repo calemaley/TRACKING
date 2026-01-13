@@ -35,11 +35,12 @@ export function MainHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
-       <SidebarTrigger className="md:hidden" />
-
-      <h1 className="flex-1 text-xl font-semibold md:hidden">{currentTitle}</h1>
+      <div className="flex items-center gap-2 md:hidden">
+        <SidebarTrigger />
+        <h1 className="flex-1 text-xl font-semibold">{currentTitle}</h1>
+      </div>
       
-      <div className="relative ml-auto flex-1 md:grow-0">
+      <div className="hidden md:flex relative ml-auto flex-1 md:grow-0">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
@@ -52,7 +53,7 @@ export function MainHeader() {
           <Button
             variant="outline"
             size="icon"
-            className="overflow-hidden rounded-full"
+            className="overflow-hidden rounded-full ml-auto md:ml-0"
           >
             <Users className="h-5 w-5" />
           </Button>
