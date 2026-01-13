@@ -9,9 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import type { Transaction } from '@/types';
+import { EditTransactionDialog } from './edit-transaction-dialog';
+import { DeleteTransactionDialog } from './delete-transaction-dialog';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -69,7 +72,8 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
     },
     {
         id: 'actions',
-        cell: () => {
+        cell: ({ row }) => {
+          const transaction = row.original;
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -80,10 +84,15 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem>Edit Transaction</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive">
-                  Delete Transaction
-                </DropdownMenuItem>
+                <EditTransactionDialog transaction={transaction}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit Transaction</DropdownMenuItem>
+                </EditTransactionDialog>
+                <DropdownMenuSeparator />
+                <DeleteTransactionDialog transaction={transaction}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                    Delete Transaction
+                  </DropdownMenuItem>
+                </DeleteTransactionDialog>
               </DropdownMenuContent>
             </DropdownMenu>
           );
