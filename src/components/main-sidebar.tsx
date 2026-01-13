@@ -8,22 +8,24 @@ import {
   SidebarContent, 
   SidebarMenu, 
   SidebarMenuItem, 
-  SidebarMenuButton 
+  SidebarMenuButton,
+  useSidebar,
 } from './ui/sidebar';
 
 export function MainSidebar() {
   const pathname = usePathname();
+  const { toggleSidebar } = useSidebar();
 
   return (
     <>
       <SidebarHeader>
-        <Link
-            href="/dashboard"
-            className="flex items-center gap-2"
+        <button
+            onClick={toggleSidebar}
+            className="flex items-center gap-2 text-lg font-semibold"
         >
             <Logo className="h-6 w-6" />
-            <span className="text-lg font-semibold">Scholastic</span>
-        </Link>
+            <span className="group-data-[collapsible=icon]:hidden">Scholastic</span>
+        </button>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
