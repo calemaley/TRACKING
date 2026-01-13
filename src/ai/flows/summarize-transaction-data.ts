@@ -31,7 +31,7 @@ const summarizeTransactionDataPrompt = ai.definePrompt({
   name: 'summarizeTransactionDataPrompt',
   input: {schema: SummarizeTransactionDataInputSchema},
   output: {schema: SummarizeTransactionDataOutputSchema},
-  prompt: `You are an expert financial analyst for schools. Analyze the following transaction data and provide a concise summary of key insights, including top expense categories and revenue trends. Use a professional tone and format the summary for easy understanding by school administrators.\n\nTransaction Data: {{{transactionData}}}`,
+  prompt: `You are an expert financial analyst for schools. Analyze the following transaction data and provide a concise summary of key insights, including top expense categories and revenue trends. All monetary values are in Kenyan Shillings (KES), so please use 'KES' as the currency symbol in your summary. Use a professional tone and format the summary for easy understanding by school administrators.\n\nTransaction Data: {{{transactionData}}}`,
 });
 
 const summarizeTransactionDataFlow = ai.defineFlow(

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Loader, Wand2 } from 'lucide-react';
+import { Download, Loader, Wand2 } from 'lucide-react';
 import { summarizeTransactionData } from '@/ai/flows/summarize-transaction-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,12 +40,32 @@ export function AiSummary({ transactions }: AiSummaryProps) {
     }
   };
 
+  const handleDownloadSummary = () => {
+    if (!summary) return;
+    const blob = new Blob([summary], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'financial-summary.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Wand2 className="h-6 w-6 text-primary" />
-          <CardTitle>AI Financial Summary</CardTitle>
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <Wand2 className="h-6 w-6 text-primary" />
+                <CardTitle>AI Financial Summary</CardTitle>
+            </div>
+            {summary && (
+                <Button variant="ghost" size="icon" onClick={handleDownloadSummary} aria-label="Download Summary">
+                    <Download className="h-5 w-5" />
+                </Button>
+            )}
         </div>
         <CardDescription>
           Get instant insights into your financial data.
