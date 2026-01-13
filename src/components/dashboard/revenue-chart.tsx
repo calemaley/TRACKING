@@ -9,7 +9,7 @@ interface RevenueChartProps {
   data: Transaction[];
 }
 
-const formatCurrencyForAxis = (value: number) => `$${(value / 1000).toFixed(0)}k`;
+const formatCurrencyForAxis = (value: number) => `KES ${(value / 1000).toFixed(0)}k`;
 
 export function RevenueChart({ data }: RevenueChartProps) {
     const chartData = useMemo(() => {
@@ -61,7 +61,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
                     backgroundColor: 'hsl(var(--background))',
                     borderColor: 'hsl(var(--border))',
                 }}
-                formatter={(value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)}
+                formatter={(value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KES' }).format(value)}
             />
             <Legend />
             <Bar dataKey="income" name="Income" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />

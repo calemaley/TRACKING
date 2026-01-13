@@ -21,6 +21,9 @@ const studentFormSchema = z.object({
   totalFeesDue: z.coerce.number().min(0, {
     message: 'Total fees due must be a positive number.',
   }),
+  feesPaid: z.coerce.number().min(0, {
+    message: 'Fees paid must be a positive number.',
+  }).optional(),
 });
 
 type StudentFormValues = z.infer<typeof studentFormSchema>;
@@ -39,6 +42,7 @@ export function AddStudentForm({ setOpen }: AddStudentFormProps) {
       name: '',
       grade: '',
       totalFeesDue: 0,
+      feesPaid: 0,
     },
   });
 
@@ -46,11 +50,12 @@ export function AddStudentForm({ setOpen }: AddStudentFormProps) {
     try {
       const studentsRef = collection(firestore, 'students');
       const newDocRef = doc(studentsRef);
+      const feesPaid = data.feesPaid || 0;
       const studentData = {
         ...data,
         id: newDocRef.id,
-        feesPaid: 0,
-        balance: data.totalFeesDue,
+        feesPaid: feesPaid,
+        balance: data.totalFeesDue - feesPaid,
       };
       await addDocumentNonBlocking(studentsRef, studentData);
 
@@ -106,7 +111,20 @@ export function AddStudentForm({ setOpen }: AddStudentFormProps) {
             <FormItem>
               <FormLabel>Total Fees Due</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="5000" {...field} />
+                <Input type="number" placeholder="50000" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="feesPaid"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Fees Paid (Initial)</FormLabel>
+              <FormControl>
+                <Input type="number" placeholder="10000" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
