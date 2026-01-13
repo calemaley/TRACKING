@@ -15,10 +15,9 @@
  *
  * Key Security Decisions:
  * - Admin-Only Writes: All write operations (create, update, delete) are
- *   restricted to users with the 'admin' role.
- * - Authenticated Reads: All authenticated users are granted read access to
- *   student and transaction data, allowing for potential future features like
- *   a parent or student portal.
+ *   restricted to users with the 'admin' role for sensitive collections.
+ * - Authenticated Access: All authenticated users are granted read and write access 
+ *   to core operational data like students and transactions.
  * - Admin Role Management: Only existing admins can grant or revoke admin
  *   privileges by creating or deleting documents in the `roles_admin` collection.
  */
@@ -51,30 +50,27 @@ service cloud.firestore {
     //-------------------------------------------------------------------------
 
     /**
-     * @description Manages student records. Only admins can write; any authenticated user can read.
+     * @description Manages student records. Any authenticated user can read and write.
      * @path /students/{studentId}
      */
     match /students/{studentId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin(); // Create, Update, Delete
+      allow read, write: if isSignedIn();
 
       /**
        * @description Manages transactions nested under a student. Same rules as parent.
        * @path /students/{studentId}/transactions/{transactionId}
        */
        match /transactions/{transactionId} {
-         allow read: if isSignedIn();
-         allow write: if isAdmin();
+         allow read, write: if isSignedIn();
        }
     }
     
     /**
-     * @description Manages all transactions. Only admins can write; any authenticated user can read.
+     * @description Manages all transactions. Any authenticated user can read and write.
      * @path /transactions/{transactionId}
      */
     match /transactions/{transactionId} {
-        allow read: if isSignedIn();
-        allow write: if isAdmin();
+        allow read, write: if isSignedIn();
     }
 
     /**
