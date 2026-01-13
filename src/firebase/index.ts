@@ -7,32 +7,19 @@ import { getFirestore } from 'firebase/firestore'
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
-  if (getApps().length) {
+  // Check if running on the client and if an app hasn't been initialized yet
+  if (typeof window !== 'undefined') {
+    if (!getApps().length) {
+      // Initialize Firebase
+      const firebaseApp = initializeApp(firebaseConfig);
+      return getSdks(firebaseApp);
+    }
+    // If already initialized, return the existing instance's SDKs
     return getSdks(getApp());
   }
-  
-  // When deployed to App Hosting, these variables are automatically provided.
-  // When running locally, they will be loaded from .env.
-  const isAppHosting = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
-
-  let firebaseApp;
-  if (isAppHosting) {
-    // If NEXT_PUBLIC_ vars are set (e.g. on Netlify or local .env), use them.
-    firebaseApp = initializeApp(firebaseConfig);
-  } else {
-     // Otherwise, try to initialize with App Hosting's auto-config.
-    try {
-      firebaseApp = initializeApp();
-    } catch (e) {
-      console.error("Automatic Firebase initialization failed. Falling back to firebaseConfig.", e);
-      // Fallback for cases where auto-init is expected but fails.
-      firebaseApp = initializeApp(firebaseConfig);
-    }
-  }
-
-  return getSdks(firebaseApp);
+  // On the server, return null for all services
+  return { firebaseApp: null, auth: null, firestore: null };
 }
-
 
 export function getSdks(firebaseApp: FirebaseApp) {
   return {
