@@ -1,24 +1,25 @@
 /**
- * Core Philosophy: This ruleset enforces a strict Role-Based Access Control (RBAC) model.
- * All data access for creating, reading, updating, and deleting student and financial
- * records is restricted to authenticated users who have been designated as administrators.
- * A user's admin status is determined by the existence of a corresponding document in
- * the `/roles_admin` collection. Non-admin users have no access to any data.
+ * Core Philosophy: This ruleset enforces that only authenticated users can
+ * access the database. For this initial version, any authenticated user can
+ * create, read, update, and delete student and transaction records. This is a
+ * permissive setup to facilitate rapid development and prototyping. In a
+ * production environment, these rules would be refined to implement more
+* granular, role-based access control (e.g., distinguishing between admins,
+ * teachers, and parents).
  *
- * Data Structure: The database is organized with top-level collections for `students`,
- * `summary`, and `roles_admin`. Financial transactions are nested as a subcollection
- * under each student document at `/students/{studentId}/transactions`.
+ * Data Structure:
+ * - /students/{studentId}: Contains student ledger information.
+ * - /transactions/{transactionId}: A log of all financial transactions.
+ * - /summary/{summaryId}: A singleton document for global financial summaries.
  *
  * Key Security Decisions:
- * - Default Deny: All operations are denied by default. Access is only granted explicitly to admins.
- * - No Public Access: There are no publicly readable collections. All access requires authentication
- *   and administrative privileges.
- * - Immutable Roles: The `roles_admin` collection is locked down to prevent client-side
- *   privilege escalation. Roles must be managed out-of-band (e.g., via the Firebase
- *   Console or a trusted server-side process). Users can only check their own role status.
- * - No Data Shape Validation: In this prototyping phase, rules focus strictly on authorization
- *   (who can access what) and do not validate the schema or data types of the documents
- *   being written, allowing for rapid application development.
+ * - Authenticated Access Only: All operations require the user to be signed in.
+ *   There is no public or unauthenticated access to any data.
+ * - Open Access for Authenticated Users: To simplify development, any signed-in
+ *   user has full CRUD (Create, Read, Update, Delete) permissions on student
+ *   and transaction records.
+ * - No Data Shape Validation: The rules focus solely on authorization (who can
+ *   access what) and do not validate the schema of the data being written.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -35,78 +36,32 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user has an admin role.
-     * Admin status is determined by the existence of a document for the user's
-     * UID in the /roles_admin collection. This is a highly performant check.
-     */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
     //-------------------------------------------------------------------------
     // Collection Rules
     //-------------------------------------------------------------------------
 
     /**
-     * @description Manages student records. Only authenticated admins can perform any action.
+     * @description Manages student records. Any authenticated user can perform any action.
      * @path /students/{studentId}
-     * @allow An admin (create): A user with a doc in /roles_admin creates a new student document.
-     * @deny A non-admin (get): A regular signed-in user is denied reading a student's record.
-     * @principle Enforces strict role-based access control (RBAC) where only admins have privileges.
      */
     match /students/{studentId} {
-      allow get: if isSignedIn() && isAdmin();
-      allow list: if isSignedIn() && isAdmin();
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
+      allow read, write: if isSignedIn();
     }
-
+    
     /**
-     * @description Manages transactions nested under a student. Only admins can access these records.
-     * @path /students/{studentId}/transactions/{transactionId}
-     * @allow An admin (delete): A user with a doc in /roles_admin deletes a specific transaction.
-     * @deny A non-admin (list): A regular signed-in user is denied listing transactions for a student.
-     * @principle Inherits admin-only access, ensuring financial data is secure and managed by authorized personnel.
+     * @description Manages all transactions. Any authenticated user can access these records.
+     * @path /transactions/{transactionId}
      */
-    match /students/{studentId}/transactions/{transactionId} {
-      allow get: if isSignedIn() && isAdmin();
-      allow list: if isSignedIn() && isAdmin();
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
+    match /transactions/{transactionId} {
+        allow read, write: if isSignedIn();
     }
 
     /**
-     * @description Manages a singleton summary document. Only admins can read or write this document.
+     * @description Manages a singleton summary document. Any authenticated user can read or write.
      * @path /summary/{summaryId}
-     * @allow An admin (update): A user with a doc in /roles_admin updates the global financial summary.
-     * @deny A non-admin (get): A regular signed-in user is denied reading the summary.
-     * @principle Secures critical application-wide data by restricting access to admins only.
      */
     match /summary/{summaryId} {
-      allow get: if isSignedIn() && isAdmin();
-      allow list: if isSignedIn() && isAdmin();
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
-    }
-
-    /**
-     * @description Defines user roles. Document existence implies admin status. This collection is read-only from the client to prevent privilege escalation.
-     * @path /roles_admin/{userId}
-     * @allow A user (get): Any authenticated user can check for their OWN admin document to confirm their role.
-     * @deny An admin (list): No user, not even an admin, can list all other admins.
-     * @deny Any user (create): No user can grant themselves or others admin privileges. This must be done via the Firebase Console or a trusted backend.
-     * @principle Implements Database-Based Access Control (DBAC) and prevents client-side privilege escalation.
-     */
-    match /roles_admin/{userId} {
-      allow get: if isSignedIn() && request.auth.uid == userId;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read, write: if isSignedIn();
     }
   }
 }
