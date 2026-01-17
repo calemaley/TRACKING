@@ -7,7 +7,6 @@ import type { Student, Transaction, Summary } from '@/types';
 import { StatCards } from '@/components/dashboard/stat-cards';
 import { RevenueChart } from '@/components/dashboard/revenue-chart';
 import { PendingPayments } from '@/components/dashboard/pending-payments';
-import { AiSummary } from '@/components/dashboard/ai-summary';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
@@ -53,14 +52,7 @@ export default function DashboardPage() {
         <StatCards data={summary} />
       )}
       
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-            {isLoading ? <Skeleton className="h-[438px] w-full" /> : <RevenueChart data={transactions ?? []} />}
-        </div>
-        <div className="lg:col-span-1">
-            <AiSummary transactions={transactions ?? []} />
-        </div>
-      </div>
+      {isLoading ? <Skeleton className="h-[438px] w-full" /> : <RevenueChart data={transactions ?? []} />}
 
       {isLoading ? <Skeleton className="h-[348px] w-full" /> : <PendingPayments data={studentsWithBalance} />}
     </div>
