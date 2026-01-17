@@ -85,6 +85,70 @@
         "description"
       ]
     },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "Represents a student invoice for fees.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID for the invoice."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "The ID of the student this invoice belongs to."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date the invoice was generated."
+        },
+        "items": {
+          "type": "array",
+          "description": "A list of billable items on the invoice.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feeItemId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "feeItemId",
+              "name",
+              "amount"
+            ]
+          }
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total amount of the invoice."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "unpaid",
+            "paid",
+            "partial"
+          ],
+          "description": "The payment status of the invoice."
+        }
+      },
+      "required": [
+        "id",
+        "studentId",
+        "date",
+        "items",
+        "totalAmount",
+        "status"
+      ]
+    },
     "Summary": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Summary",
@@ -159,6 +223,38 @@
             {
               "name": "studentId",
               "description": "The unique identifier for the student."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": {
+            "$ref": "#/backend/entities/Transaction"
+          },
+          "description": "Stores all financial transactions, both income and expenses.",
+          "params": [
+            {
+              "name": "transactionId",
+              "description": "The unique ID for the transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/invoices/{invoiceId}",
+        "definition": {
+          "entityName": "Invoice",
+          "schema": {
+            "$ref": "#/backend/entities/Invoice"
+          },
+          "description": "Stores all generated student invoices.",
+          "params": [
+            {
+              "name": "invoiceId",
+              "description": "The unique ID for the invoice."
             }
           ]
         }

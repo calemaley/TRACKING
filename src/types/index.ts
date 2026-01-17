@@ -28,4 +28,19 @@ export type Student = {
     amount: number;
     description?: string;
 };
+
+export type InvoiceItem = {
+  feeItemId: string;
+  name: string;
+  amount: number;
+}
+
+export type Invoice = {
+  id: string;
+  studentId: string;
+  date: string;
+  items: InvoiceItem[];
+  totalAmount: number;
+  status: 'unpaid' | 'paid' | 'partial';
+};
   

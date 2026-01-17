@@ -9,6 +9,7 @@
  * Data Structure:
  * - /students/{studentId}: Contains student ledger information.
  * - /transactions/{transactionId}: A log of all financial transactions.
+ * - /invoices/{invoiceId}: Contains generated invoice data.
  * - /feeItems/{feeItemId}: Contains billable fee item structures.
  * - /summary/{summaryId}: A singleton document for global financial summaries.
  * - /roles_admin/{userId}: A collection where the existence of a document
@@ -48,14 +49,6 @@ service cloud.firestore {
      */
     match /students/{studentId} {
       allow get, list, create, update, delete: if isSignedIn();
-
-      /**
-       * @description Manages transactions nested under a student. Same rules as parent.
-       * @path /students/{studentId}/transactions/{transactionId}
-       */
-       match /transactions/{transactionId} {
-         allow get, list, create, update, delete: if isSignedIn();
-       }
     }
     
     /**
@@ -72,6 +65,14 @@ service cloud.firestore {
      */
     match /feeItems/{feeItemId} {
       allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Manages student invoices. Any authenticated user can read and write.
+     * @path /invoices/{invoiceId}
+     */
+    match /invoices/{invoiceId} {
+        allow get, list, create, update, delete: if isSignedIn();
     }
 
     /**

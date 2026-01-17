@@ -16,6 +16,7 @@ import type { Student } from '@/types';
 import { EditStudentDialog } from './edit-student-dialog';
 import { MakePaymentDialog } from './make-payment-dialog';
 import { DeleteStudentDialog } from './delete-student-dialog';
+import { GenerateInvoiceDialog } from './generate-invoice-dialog';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -90,6 +91,9 @@ export const studentColumns: ColumnDef<Student>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <GenerateInvoiceDialog student={student}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Generate Invoice</DropdownMenuItem>
+            </GenerateInvoiceDialog>
             <MakePaymentDialog student={student}>
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Make Payment</DropdownMenuItem>
             </MakePaymentDialog>
