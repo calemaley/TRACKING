@@ -1,14 +1,15 @@
 /**
- * Core Philosophy: This ruleset enforces role-based access control (RBAC).
- * It distinguishes between general authenticated users and 'admins'. Admins
- * have full CRUD (Create, Read, Update, Delete) permissions across the
- * database, while general authenticated users have read-only access. This
- * ensures that sensitive financial data can only be modified by authorized
- * personnel.
+ * Core Philosophy: This ruleset allows any authenticated user to read and write
+ * to the main data collections (students, transactions, feeItems).
+ * It reserves write access for administrative collections (summary, roles_admin)
+ * for users who have a specific 'admin' role. This allows the app to be
+ * fully functional for all logged-in users while protecting sensitive
+ * administrative data.
  *
  * Data Structure:
  * - /students/{studentId}: Contains student ledger information.
  * - /transactions/{transactionId}: A log of all financial transactions.
+ * - /feeItems/{feeItemId}: Contains billable fee item structures.
  * - /summary/{summaryId}: A singleton document for global financial summaries.
  * - /roles_admin/{userId}: A collection where the existence of a document
  *   indicates that the user is an admin.
@@ -46,14 +47,14 @@ service cloud.firestore {
      * @path /students/{studentId}
      */
     match /students/{studentId} {
-      allow read, write: if isSignedIn();
+      allow get, list, create, update, delete: if isSignedIn();
 
       /**
        * @description Manages transactions nested under a student. Same rules as parent.
        * @path /students/{studentId}/transactions/{transactionId}
        */
        match /transactions/{transactionId} {
-         allow read, write: if isSignedIn();
+         allow get, list, create, update, delete: if isSignedIn();
        }
     }
     
@@ -62,7 +63,7 @@ service cloud.firestore {
      * @path /transactions/{transactionId}
      */
     match /transactions/{transactionId} {
-        allow read, write: if isSignedIn();
+        allow get, list, create, update, delete: if isSignedIn();
     }
 
     /**
@@ -70,7 +71,7 @@ service cloud.firestore {
      * @path /feeItems/{feeItemId}
      */
     match /feeItems/{feeItemId} {
-      allow read, write: if isSignedIn();
+      allow get, list, create, update, delete: if isSignedIn();
     }
 
     /**
