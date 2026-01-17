@@ -84,9 +84,14 @@ export function AiSummary({ transactions }: AiSummaryProps) {
             </div>
         )}
          {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button onClick={handleGenerateSummary} disabled={loading || transactions.length === 0} className="w-full mt-auto">
-          {loading ? 'Generating...' : 'Generate Summary'}
-        </Button>
+        <div className="w-full mt-auto">
+          <Button onClick={handleGenerateSummary} disabled={loading || transactions.length === 0} className="w-full">
+            {loading ? 'Generating...' : 'Generate Summary'}
+          </Button>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Your financial data is sent to a secure AI model for analysis and is not stored or used for any other purpose.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
