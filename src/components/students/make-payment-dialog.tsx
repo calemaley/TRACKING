@@ -27,7 +27,7 @@ export function MakePaymentDialog({ student, children }: MakePaymentDialogProps)
         <DialogHeader>
           <DialogTitle>Pay Balance for {student.name}</DialogTitle>
           <DialogDescription>
-            You can clear the outstanding balance using Paystack.
+            Make a payment to clear the student's outstanding balance.
           </DialogDescription>
         </DialogHeader>
         <MakePaymentForm student={student} setOpen={setOpen} />

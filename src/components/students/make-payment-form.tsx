@@ -6,7 +6,9 @@ import { doc, runTransaction, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Student } from '@/types';
 import { usePaystackPayment } from 'react-paystack';
-import { Banknote } from 'lucide-react';
+import { Banknote, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 interface MakePaymentFormProps {
   student: Student;
@@ -16,6 +18,8 @@ interface MakePaymentFormProps {
 export function MakePaymentForm({ student, setOpen }: MakePaymentFormProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
+
+  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
 
   const currentBalance = student.balance;
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KES' }).format(amount);
@@ -31,6 +35,7 @@ export function MakePaymentForm({ student, setOpen }: MakePaymentFormProps) {
         }
 
         const currentFeesPaid = studentDoc.data().feesPaid || 0;
+        // The amount paid is the balance at the time of payment initiation
         const newFeesPaid = currentFeesPaid + currentBalance;
         const newBalance = studentDoc.data().totalFeesDue - newFeesPaid;
 
@@ -76,29 +81,58 @@ export function MakePaymentForm({ student, setOpen }: MakePaymentFormProps) {
 
   const config = {
     reference: `${student.id}_${new Date().getTime()}`,
-    email: student.email || 'guest@example.com', // Fallback email
-    amount: currentBalance * 100, // Amount in kobo
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
+    email: student.email || 'guest@example.com',
+    amount: currentBalance * 100, // Amount in kobo/cents
+    publicKey,
   };
 
   const initializePayment = usePaystackPayment(config);
 
-  const canPay = currentBalance > 0 && !!student.email;
+  const isConfigured = !!publicKey;
+  const canPay = currentBalance > 0 && !!student.email && isConfigured;
+
+  let errorCondition = null;
+  if (!isConfigured) {
+    errorCondition = (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Configuration Error</AlertTitle>
+        <AlertDescription>
+          Paystack is not configured. The public key is missing.
+        </AlertDescription>
+      </Alert>
+    );
+  } else if (currentBalance <= 0) {
+    errorCondition = (
+        <Alert>
+          <AlertTitle>No Balance Due</AlertTitle>
+          <AlertDescription>
+            This student has no outstanding balance to be paid.
+          </AlertDescription>
+        </Alert>
+    );
+  } else if (!student.email) {
+    errorCondition = (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Email Missing</AlertTitle>
+        <AlertDescription>
+          A contact email is required to make an online payment for this student.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
         <div className='p-4 bg-muted rounded-md'>
             <p className='text-sm text-muted-foreground'>Current Balance</p>
             <p className='text-2xl font-bold'>{formatCurrency(currentBalance)}</p>
         </div>
         
-        {!student.email && currentBalance > 0 && (
-          <div className="text-sm text-destructive">
-            Please add a contact email for this student to enable online payments.
-          </div>
-        )}
+        {errorCondition}
         
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button 
                 onClick={() => {
