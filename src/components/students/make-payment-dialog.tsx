@@ -25,9 +25,9 @@ export function MakePaymentDialog({ student, children }: MakePaymentDialogProps)
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Make Payment for {student.name}</DialogTitle>
+          <DialogTitle>Pay Balance for {student.name}</DialogTitle>
           <DialogDescription>
-            Record a new payment. The student's balance will be updated automatically.
+            You can clear the outstanding balance using Paystack.
           </DialogDescription>
         </DialogHeader>
         <MakePaymentForm student={student} setOpen={setOpen} />

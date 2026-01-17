@@ -1,6 +1,7 @@
 export type Student = {
     id: string;
     name: string;
+    email?: string;
     grade: string;
     totalFeesDue: number;
     feesPaid: number;

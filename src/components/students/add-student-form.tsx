@@ -15,6 +15,7 @@ const studentFormSchema = z.object({
   name: z.string().min(2, {
     message: 'Name must be at least 2 characters.',
   }),
+  email: z.string().email({ message: 'Please enter a valid email.' }).optional().or(z.literal('')),
   grade: z.string().min(1, {
     message: 'Grade is required.',
   }),
@@ -40,6 +41,7 @@ export function AddStudentForm({ setOpen }: AddStudentFormProps) {
     resolver: zodResolver(studentFormSchema),
     defaultValues: {
       name: '',
+      email: '',
       grade: '',
       totalFeesDue: 0,
       feesPaid: 0,
@@ -86,6 +88,19 @@ export function AddStudentForm({ setOpen }: AddStudentFormProps) {
               <FormLabel>Name</FormLabel>
               <FormControl>
                 <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contact Email</FormLabel>
+              <FormControl>
+                <Input placeholder="parent@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
