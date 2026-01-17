@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import type { Student, Invoice, Transaction } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,10 +80,6 @@ export function StudentStatement({ student, invoices, transactions }: StudentSta
   const handleDownload = () => {
     const doc = new jsPDF();
     
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const autoTable = doc.autoTable;
-
     doc.setFontSize(20);
     doc.text(`Fee Statement for ${student.name}`, 14, 22);
     doc.setFontSize(12);
@@ -106,7 +102,7 @@ export function StudentStatement({ student, invoices, transactions }: StudentSta
         tableRows.push(rowData);
     });
     
-    autoTable({
+    autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
         startY: 50,
