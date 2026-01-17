@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useFirestore } from '@/firebase';
 import { doc, runTransaction, collection } from 'firebase/firestore';
@@ -18,11 +19,27 @@ interface MakePaymentFormProps {
 export function MakePaymentForm({ student, setOpen }: MakePaymentFormProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const [reference, setReference] = useState('');
+
+  useEffect(() => {
+    // Generate a unique reference when the component mounts or the student changes.
+    setReference(`${student.id}_${new Date().getTime()}`);
+  }, [student.id]);
+
 
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
 
   const currentBalance = student.balance;
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KES' }).format(amount);
+
+  const config = {
+    reference,
+    email: student.email || 'guest@example.com',
+    amount: currentBalance * 100, // Amount in kobo/cents
+    publicKey,
+  };
+
+  const initializePayment = usePaystackPayment(config);
 
   const handlePaymentSuccess = async () => {
     try {
@@ -79,17 +96,8 @@ export function MakePaymentForm({ student, setOpen }: MakePaymentFormProps) {
     });
   };
 
-  const config = {
-    reference: `${student.id}_${new Date().getTime()}`,
-    email: student.email || 'guest@example.com',
-    amount: currentBalance * 100, // Amount in kobo/cents
-    publicKey,
-  };
-
-  const initializePayment = usePaystackPayment(config);
-
   const isConfigured = !!publicKey;
-  const canPay = currentBalance > 0 && !!student.email && isConfigured;
+  const canPay = currentBalance > 0 && !!student.email && isConfigured && !!reference;
 
   let errorCondition = null;
   if (!isConfigured) {
