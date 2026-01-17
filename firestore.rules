@@ -12,14 +12,6 @@
  * - /summary/{summaryId}: A singleton document for global financial summaries.
  * - /roles_admin/{userId}: A collection where the existence of a document
  *   indicates that the user is an admin.
- *
- * Key Security Decisions:
- * - Admin-Only Writes: All write operations (create, update, delete) are
- *   restricted to users with the 'admin' role for sensitive collections.
- * - Authenticated Access: All authenticated users are granted read and write access 
- *   to core operational data like students and transactions.
- * - Admin Role Management: Only existing admins can grant or revoke admin
- *   privileges by creating or deleting documents in the `roles_admin` collection.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -71,6 +63,14 @@ service cloud.firestore {
      */
     match /transactions/{transactionId} {
         allow read, write: if isSignedIn();
+    }
+
+    /**
+     * @description Manages fee items. Any authenticated user can read and write.
+     * @path /feeItems/{feeItemId}
+     */
+    match /feeItems/{feeItemId} {
+      allow read, write: if isSignedIn();
     }
 
     /**
