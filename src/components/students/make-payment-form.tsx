@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useFirestore } from '@/firebase';
-import { doc, runTransaction } from 'firebase/firestore';
+import { doc, runTransaction, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Student } from '@/types';
 
@@ -53,9 +53,22 @@ export function MakePaymentForm({ student, setOpen }: MakePaymentFormProps) {
         const newFeesPaid = currentFeesPaid + data.paymentAmount;
         const newBalance = studentDoc.data().totalFeesDue - newFeesPaid;
 
+        // Update student document
         transaction.update(studentRef, { 
             feesPaid: newFeesPaid,
             balance: newBalance
+        });
+
+        // Create a corresponding income transaction
+        const newTransactionRef = doc(collection(firestore, 'transactions'));
+        transaction.set(newTransactionRef, {
+            id: newTransactionRef.id,
+            type: 'Income',
+            amount: data.paymentAmount,
+            category: 'Fee Payment',
+            date: new Date().toISOString(),
+            description: `Payment from ${student.name}`,
+            studentId: student.id,
         });
       });
 

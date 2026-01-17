@@ -14,6 +14,7 @@ export type Student = {
     category: string;
     date: string;
     description: string;
+    studentId?: string;
   };
   
   export type Summary = {

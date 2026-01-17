@@ -70,6 +70,10 @@
         "description": {
           "type": "string",
           "description": "A description of the transaction."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "The ID of the student associated with this transaction, if applicable."
         }
       },
       "required": [
@@ -97,7 +101,7 @@
         },
         "totalLoss": {
           "type": "number",
-          "description": "The total loss calculated based on unpaid student balances or over-budget expenses."
+          "description": "The total loss calculated on unpaid student balances or over-budget expenses."
         }
       },
       "required": [
