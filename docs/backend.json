@@ -105,6 +105,34 @@
         "totalProfit",
         "totalLoss"
       ]
+    },
+    "FeeItem": {
+      "title": "Fee Item",
+      "description": "Represents a single billable item that can be added to an invoice, such as Tuition, Uniform, or Boarding fees.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Fee Item."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the fee item (e.g., 'Term 1 Tuition')."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The cost of the fee item."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional description for the fee item."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "amount"
+      ]
     }
   },
   "auth": {
@@ -132,21 +160,17 @@
         }
       },
       {
-        "path": "/students/{studentId}/transactions/{transactionId}",
+        "path": "/feeItems/{feeItemId}",
         "definition": {
-          "entityName": "Transaction",
+          "entityName": "FeeItem",
           "schema": {
-            "$ref": "#/backend/entities/Transaction"
+            "$ref": "#/backend/entities/FeeItem"
           },
-          "description": "Stores transaction records for each student. Includes denormalized 'studentId' for authorization independence.",
+          "description": "Stores individual billable fee items that can be used to build invoices.",
           "params": [
             {
-              "name": "studentId",
-              "description": "The unique identifier for the student."
-            },
-            {
-              "name": "transactionId",
-              "description": "The unique identifier for the transaction."
+              "name": "feeItemId",
+              "description": "The unique ID for the fee item."
             }
           ]
         }

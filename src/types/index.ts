@@ -20,4 +20,11 @@ export type Student = {
     totalRevenue: number;
     totalExpenses: number;
   };
+
+  export type FeeItem = {
+    id: string;
+    name: string;
+    amount: number;
+    description?: string;
+};
   
