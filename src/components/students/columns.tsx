@@ -40,6 +40,14 @@ export const studentColumns: ColumnDef<Student>[] = [
           </Button>
         )
       },
+      cell: ({ row }) => {
+        const student = row.original;
+        return (
+            <Link href={`/students/${student.id}`} className="font-medium text-primary hover:underline">
+                {student.name}
+            </Link>
+        )
+    }
   },
   {
     accessorKey: 'grade',
@@ -92,10 +100,6 @@ export const studentColumns: ColumnDef<Student>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-                <Link href={`/students/${student.id}`}>View Statement</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <GenerateInvoiceDialog student={student}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Generate Invoice</DropdownMenuItem>
             </GenerateInvoiceDialog>
